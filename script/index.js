@@ -17,6 +17,15 @@
  let pdParams = [];
  let pdFcjaCelu = [];
  let pdTraces = [];
+ var layout = {
+    xaxis: {
+      range: [ 0, 8.5 ]
+    },
+    yaxis: {
+      range: [0, 6.5 ]
+    },
+    title:'Rozwiazanie PD'
+  };
  
  // PL - program liniowy 
  function findXnY (a,b,res){
@@ -69,48 +78,23 @@
 //  }
 
   function createPlot(){
-    // var trace3 = {
-    //     x: [1, 2, 3, 4],
-    //     y: [12, 9, 15, 12],
-    //     mode: 'lines+markers'
-    //   };
     let traces = []; 
     let newParams;
-    var layout = {};
     for (let i = 0; i < aParams.length; i++) {
         
         newParams = findXnY(pdParams[i].y1,pdParams[i].y2,pdParams[i].res);
         traces[i] = {
             x : [0, newParams.y1],
             y : [newParams.y2, 0],
+            name: `${i+1}) ${pdParams[i].y1}*y1 + ${pdParams[i].y2}*y2 >= ${pdParams[i].res}`,
             mode : 'lines+markers'
         }
-        console.log(traces[i]);
     }
-  
     Plotly.newPlot('myDiv', traces, layout);
-    
   }
 
 
 
- /**
-  * 
-  * 
-  * 
-  *   
-  var trace3 = {
-    x: [1, 2, 3, 4],
-    y: [12, 9, 15, 12],
-    mode: 'lines+markers'
-  };
-  
-  var data = [ trace3 ];
-  
-  var layout = {};
-  
-  Plotly.newPlot('myDiv', data, layout);
-  */
  
  console.log(`
  entered data:
@@ -121,10 +105,8 @@
  F(x1,x2,..xn) = ${fcjaCelu[0]}*x1 + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  
  `)
  let l1 = findXnY(1,2,4);
- // let l2 = findXnY(7,0,0.3);
  PPtoPD(aParams,bParams,limits,fcjaCelu);
  createPlot();
  console.log(pdParams)
- // console.log(line_intersect(l1.y1,0,0,l1.y2,l2.y1,0,0,l2.y2));
  
  
