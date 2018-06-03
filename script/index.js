@@ -1,28 +1,3 @@
-var trace1 = {
-    x: [1, 2, 3, 4],
-    y: [10, 15, 13, 17],
-    mode: 'markers'
-  };
-  
-  var trace2 = {
-    x: [2, 3, 4, 5],
-    y: [16, 5, 11, 10],
-    mode: 'lines'
-  };
-  
-  var trace3 = {
-    x: [1, 2, 3, 4],
-    y: [12, 9, 15, 12],
-    mode: 'lines+markers'
-  };
-  
-  var data = [ trace1, trace2, trace3 ];
-  
-  var layout = {};
-  
-  Plotly.newPlot('myDiv', data, layout);
-
-
 /**
  * 
     0.5*x1 + 0.4*x2 + 0.4*x3 + 0.2*x4 <= 2000
@@ -41,6 +16,7 @@ var trace1 = {
  let fcjaCelu = [4,6,3,12];
  let pdParams = [];
  let pdFcjaCelu = [];
+ let pdTraces = [];
  
  // PL - program liniowy 
  function findXnY (a,b,res){
@@ -77,20 +53,64 @@ var trace1 = {
      );
  }
  
- function line_intersect(x1, y1, x2, y2, x3, y3, x4, y4){
-     var ua, ub, denom = (y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1);
-     if (denom == 0) {
-         return null;
-     }
-     ua = ((x4 - x3)*(y1 - y3) - (y4 - y3)*(x1 - x3))/denom;
-     ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3))/denom;
-     return {
-         x: x1 + ua * (x2 - x1),
-         y: y1 + ub * (y2 - y1),
-         seg1: ua >= 0 && ua <= 1,
-         seg2: ub >= 0 && ub <= 1
-     };
- }
+//  function line_intersect(x1, y1, x2, y2, x3, y3, x4, y4){
+//      var ua, ub, denom = (y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1);
+//      if (denom == 0) {
+//          return null;
+//      }
+//      ua = ((x4 - x3)*(y1 - y3) - (y4 - y3)*(x1 - x3))/denom;
+//      ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3))/denom;
+//      return {
+//          x: x1 + ua * (x2 - x1),
+//          y: y1 + ub * (y2 - y1),
+//          seg1: ua >= 0 && ua <= 1,
+//          seg2: ub >= 0 && ub <= 1
+//      };
+//  }
+
+  function createPlot(){
+    // var trace3 = {
+    //     x: [1, 2, 3, 4],
+    //     y: [12, 9, 15, 12],
+    //     mode: 'lines+markers'
+    //   };
+    let traces = []; 
+    let newParams;
+    var layout = {};
+    for (let i = 0; i < aParams.length; i++) {
+        
+        newParams = findXnY(pdParams[i].y1,pdParams[i].y2,pdParams[i].res);
+        traces[i] = {
+            x : [0, newParams.y1],
+            y : [newParams.y2, 0],
+            mode : 'lines+markers'
+        }
+        console.log(traces[i]);
+    }
+  
+    Plotly.newPlot('myDiv', traces, layout);
+    
+  }
+
+
+
+ /**
+  * 
+  * 
+  * 
+  *   
+  var trace3 = {
+    x: [1, 2, 3, 4],
+    y: [12, 9, 15, 12],
+    mode: 'lines+markers'
+  };
+  
+  var data = [ trace3 ];
+  
+  var layout = {};
+  
+  Plotly.newPlot('myDiv', data, layout);
+  */
  
  console.log(`
  entered data:
@@ -103,7 +123,7 @@ var trace1 = {
  let l1 = findXnY(1,2,4);
  // let l2 = findXnY(7,0,0.3);
  PPtoPD(aParams,bParams,limits,fcjaCelu);
- 
+ createPlot();
  console.log(pdParams)
  // console.log(line_intersect(l1.y1,0,0,l1.y2,l2.y1,0,0,l2.y2));
  
