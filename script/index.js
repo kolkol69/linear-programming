@@ -9,6 +9,8 @@ let pdFcjaCelu = [];
 let pdTraces = [];
 let traces = [];
 let pdLinesCoords = [];
+let pointsToCheck = [];
+
 let pdIntersectionPoints = [];
 var layout = {
     xaxis: {
@@ -259,9 +261,7 @@ function gauss(passCond) {
     for (let i = 0; i < passCond.length; i++) {
         for (let j = 0; j < passCond.length + 1; j++) {
             if (i < passCond.length && j < passCond.length + 1) {
-                console.log(passCond.length, i, j);
                 A[i][j] = passCond[i][`y${j + 1}`];
-                // console.log(`A[${i}][${j}]`,A[i][j]);
             } else {
                 A[i][j] = 0;
             }
@@ -281,9 +281,7 @@ function gauss(passCond) {
                 maxRow = k;
             }
         }
-        copyA = A[0].slice();
-        copyB = A[1].slice();
-        console.log(copyA, copyB);
+
 
         // Swap maximum row with current row (column by column)
         for (var k = i; k < n + 1; k++) {
@@ -291,9 +289,6 @@ function gauss(passCond) {
             A[maxRow][k] = A[i][k];
             A[i][k] = tmp;
         }
-        copyA = A[0].slice();
-        copyB = A[1].slice();
-        console.log(copyA, copyB);
 
         // Make all rows below this one 0 in current column
         for (k = i + 1; k < n; k++) {
@@ -307,10 +302,6 @@ function gauss(passCond) {
             }
         }
     }
-    copyA = A[0].slice();
-    copyB = A[1].slice();
-    console.log(copyA, copyB);
-
     // Solve equation Ax=b for an upper triangular matrix A
     var x = new Array(n);
     for (var i = n - 1; i > -1; i--) {
@@ -345,21 +336,31 @@ for (let i = 0; i < pdParams.length; i++) {
 }
 console.log(finalResult);
 console.log(pointsToCheck);
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+console.log('Lista punktów ograniczających zbiór rozwiązań dopuszczalnych dla PD');
+let iter = 0;
+for (const iterator of pointsToCheck) {
+    console.log(`${++iter}) (${iterator.x},${iterator.y})`);
+}
+console.log('Punkt realizujący optimum PP');
+console.log()    
 
-let inData = `
-<h3>Input:</h3><br>
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+// let inData = `
+// <h3>Input:</h3><br>
  
- ${aParams[0]}*x1 + ${aParams[1]}*x2 + ${aParams[2]}*x3 + ${aParams[3]}*x4 <= ${limits[0]} <br>
- ${bParams[0]}*x1 + ${bParams[1]}*x2 + ${bParams[2]}*x3 + ${bParams[3]}*x4 <= ${limits[1]} <br>
- F(x1,x2,..xn) = ${fcjaCelu[0]}*x1 + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  <br>
- `
+//  ${aParams[0]}*x1 + ${aParams[1]}*x2 + ${aParams[2]}*x3 + ${aParams[3]}*x4 <= ${limits[0]} <br>
+//  ${bParams[0]}*x1 + ${bParams[1]}*x2 + ${bParams[2]}*x3 + ${bParams[3]}*x4 <= ${limits[1]} <br>
+//  F(x1,x2,..xn) = ${fcjaCelu[0]}*x1 + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  <br>
+//  `
 
-let outData = `
-    ${pointsToCheck}
-`
-var $inDataHtml = $( "#in-data" ),
- html = $.parseHTML( inData );
- $inDataHtml.append( html );
+// let outData = `
+//     ${pointsToCheck}
+// `
+// var $inDataHtml = $( "#in-data" ),
+//  html = $.parseHTML( inData );
+//  $inDataHtml.append( html );
 
 
 
