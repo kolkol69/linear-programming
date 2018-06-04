@@ -1,13 +1,3 @@
-/**
- * 
-    0.5*x1 + 0.4*x2 + 0.4*x3 + 0.2*x4 <= 2000
-    0.4*x1 + 0.2*x2 + 0.5*x4 <= 2800
-    F(x1,x2,x3,x4) = 10*x1 + 14*x2 + 8*x3 + 11*x4 -> max
- * зробити то так щоб можна було вчитати ті дані з джейсона
- * або ше звідкісь
- * 
- */
-
 
 // PD - program dualny
 let aParams = [1, 2, 1.5, 6];
@@ -30,14 +20,16 @@ var layout = {
     title: 'Rozwiazanie PD'
 };
 
+let finalResult = [];
+
 // PL - program liniowy 
-function findXnY(a, b, res) {
+function findXnY(a, b, y3) {
     let y1, y2;
     if (a !== 0) {
-        y1 = res / a;
+        y1 = y3 / a;
     } else y1 = 0;
     if (b !== 0) {
-        y2 = res / b;
+        y2 = y3 / b;
     } else y2 = 0;
 
     return {
@@ -52,7 +44,7 @@ function PPtoPD() {
         pdParams[i] = {
             y1: aParams[i],
             y2: bParams[i],
-            res: fcjaCelu[i],
+            y3: fcjaCelu[i],
         }
         if (i < limits.length)
             pdFcjaCelu[i] = limits[i];
@@ -106,7 +98,7 @@ function createPlot() {
     let newParams;
     for (let i = 0; i < aParams.length; i++) {
 
-        newParams = findXnY(pdParams[i].y1, pdParams[i].y2, pdParams[i].res);
+        newParams = findXnY(pdParams[i].y1, pdParams[i].y2, pdParams[i].y3);
         pdLinesCoords[i] = {
             startX: 0,
             startY: newParams.y2,
@@ -116,18 +108,17 @@ function createPlot() {
         traces[i] = {
             x: [0, newParams.y1],
             y: [newParams.y2, 0],
-            name: `${i + 1}) ${pdParams[i].y1}*y1 + ${pdParams[i].y2}*y2 >= ${pdParams[i].res}`,
+            name: `${i + 1}) ${pdParams[i].y1}*y1 + ${pdParams[i].y2}*y2 >= ${pdParams[i].y3}`,
             mode: 'lines'
         }
     }
-    // Plotly.newPlot('myDiv', traces, layout);
 }
 
 function findLinesIntersections() {
-    let tmp, counter = 0;
+    let isLineInter, counter = 0;
     for (let i = 0; i < pdLinesCoords.length; i++) {
         for (let j = i + 1; j < pdLinesCoords.length; j++) {
-            tmp = checkLineIntersection(
+            isLineInter = checkLineIntersection(
                 pdLinesCoords[i].startX,
                 pdLinesCoords[i].startY,
                 pdLinesCoords[i].endX,
@@ -138,16 +129,14 @@ function findLinesIntersections() {
                 pdLinesCoords[j].endY
             );
 
-            if (tmp.x !== null || tmp.y !== null) {
-                pdIntersectionPoints[counter] = tmp;
-                counter++;
-            }
+            if (isLineInter.x !== null || isLineInter.y !== null)
+                pdIntersectionPoints[counter++] = isLineInter;
         }
     }
 }
 function isOnLine(point, line) {
     // pdParams;
-    return line.res === (point.x * line.y1 + point.y * line.y2);
+    return line.y3 === (point.x * line.y1 + point.y * line.y2);
 }
 
 function topPoint(point) {
@@ -182,8 +171,7 @@ function getDistance(startX, startY, endX, endY) {
 }
 
 function getPointsToCheck() {
-    // pdIntersectionPoints[]
-    let pointsToCheck = [];
+    
     let counter = 0;
     let maxY = 0, maxX = 0;
 
@@ -231,7 +219,7 @@ function findMinFunction(points) {
     let min = 99999999999999999, tmp;
     let result;
     for (let i = 0; i < points.length; i++) {
-        tmp = pdFcjaCelu[0]*points[i].x + pdFcjaCelu[1]*points[i].y; 
+        tmp = pdFcjaCelu[0] * points[i].x + pdFcjaCelu[1] * points[i].y;
         if (min > tmp) {
             min = tmp;
             result = {
@@ -243,24 +231,137 @@ function findMinFunction(points) {
     }
     return result;
 }
-console.log(`
-entered data:
- 
- ${aParams[0]}*x1 + ${aParams[1]}*x2 + ${aParams[2]}*x3 + ${aParams[3]}*x4 <= ${limits[0]} 
- ${bParams[0]}*x1 + ${bParams[1]}*x2 + ${bParams[2]}*x3 + ${bParams[3]}*x4 <= ${limits[1]} 
- F(x1,x2,..xn) = ${fcjaCelu[0]}*x1 + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  
- `)
+
+function checkForConditions(minPoint) {
+    let conditionResult = 0;
+    let passCondition = [];
+    let counter = 0;
+    for (let i = 0; i < pdParams.length; i++) {
+        conditionResult = minPoint.x * pdParams[i].y1 + minPoint.y * pdParams[i].y2;
+        if (conditionResult === pdParams[i].y3) {
+            passCondition.push({
+                y1: pdParams[i].y1,
+                y2: pdParams[i].y2,
+                y3: pdFcjaCelu[counter++]
+            });
+        }
+        else {
+            finalResult[`x${i + 1}`] = 0;
+        }
+    }
+    return passCondition;
+}
+function gauss(passCond) {
+    var A = new Array(passCond.length);
+    for (var i = 0; i < passCond.length; i++) {
+        A[i] = new Array(passCond.length + 1);
+    }
+    for (let i = 0; i < passCond.length; i++) {
+        for (let j = 0; j < passCond.length + 1; j++) {
+            if (i < passCond.length && j < passCond.length + 1) {
+                console.log(passCond.length, i, j);
+                A[i][j] = passCond[i][`y${j + 1}`];
+                // console.log(`A[${i}][${j}]`,A[i][j]);
+            } else {
+                A[i][j] = 0;
+            }
+        }
+    }
+
+
+    var n = A.length;
+
+    for (var i = 0; i < n; i++) {
+        // Search for maximum in this column
+        var maxEl = Math.abs(A[i][i]);
+        var maxRow = i;
+        for (var k = i + 1; k < n; k++) {
+            if (Math.abs(A[k][i]) > maxEl) {
+                maxEl = Math.abs(A[k][i]);
+                maxRow = k;
+            }
+        }
+        copyA = A[0].slice();
+        copyB = A[1].slice();
+        console.log(copyA, copyB);
+
+        // Swap maximum row with current row (column by column)
+        for (var k = i; k < n + 1; k++) {
+            var tmp = A[maxRow][k];
+            A[maxRow][k] = A[i][k];
+            A[i][k] = tmp;
+        }
+        copyA = A[0].slice();
+        copyB = A[1].slice();
+        console.log(copyA, copyB);
+
+        // Make all rows below this one 0 in current column
+        for (k = i + 1; k < n; k++) {
+            var c = -A[k][i] / A[i][i];
+            for (var j = i; j < n + 1; j++) {
+                if (i == j) {
+                    A[k][j] = 0;
+                } else {
+                    A[k][j] += c * A[i][j];
+                }
+            }
+        }
+    }
+    copyA = A[0].slice();
+    copyB = A[1].slice();
+    console.log(copyA, copyB);
+
+    // Solve equation Ax=b for an upper triangular matrix A
+    var x = new Array(n);
+    for (var i = n - 1; i > -1; i--) {
+        x[i] = A[i][n] / A[i][i];
+        for (var k = i - 1; k > -1; k--) {
+            A[k][n] -= A[k][i] * x[i];
+        }
+    }
+    return x;
+}
+
+function finalCheck() {
+    console.log(`
+F(x1,x2,..xn) = ${fcjaCelu[0]}*${finalResult.x1} + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  
+`)
+}
+// console.log()
 createPlot();
 findLinesIntersections();
 console.log('pdParams', pdParams);
 console.log('pdLinesCoords', pdLinesCoords);
 console.log('pdIntersectionPoints', pdIntersectionPoints);
-// console.log('points to check: ', getPointsToCheck());
 console.log('PD pdFcjaCelu', pdFcjaCelu);
 let minimum = findMinFunction(getPointsToCheck());
 console.log('min is', minimum.x, minimum.y, minimum.min);
+let partRes = gauss(checkForConditions(minimum));
+let ctr = 0;
+for (let i = 0; i < pdParams.length; i++) {
+    if (finalResult[`x${i + 1}`] !== 0) {
+        finalResult[`x${i + 1}`] = partRes[ctr++];
+    }
+}
+console.log(finalResult);
+console.log(pointsToCheck);
 
-// console.log('Math.min([1,2,3])',Math.min([1,2,3]));
+let inData = `
+<h3>Input:</h3><br>
+ 
+ ${aParams[0]}*x1 + ${aParams[1]}*x2 + ${aParams[2]}*x3 + ${aParams[3]}*x4 <= ${limits[0]} <br>
+ ${bParams[0]}*x1 + ${bParams[1]}*x2 + ${bParams[2]}*x3 + ${bParams[3]}*x4 <= ${limits[1]} <br>
+ F(x1,x2,..xn) = ${fcjaCelu[0]}*x1 + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  <br>
+ `
+
+let outData = `
+    ${pointsToCheck}
+`
+var $inDataHtml = $( "#in-data" ),
+ html = $.parseHTML( inData );
+ $inDataHtml.append( html );
+
+
 
 
 
