@@ -22,10 +22,10 @@ let pdLinesCoords = [];
 let pdIntersectionPoints = [];
 var layout = {
     xaxis: {
-        range: [0, 8.5]
+        range: [0, 5]
     },
     yaxis: {
-        range: [0, 6.5]
+        range: [0, 4]
     },
     title: 'Rozwiazanie PD'
 };
@@ -54,14 +54,15 @@ function PPtoPD() {
             y2: bParams[i],
             res: fcjaCelu[i],
         }
-        pdFcjaCelu[i] = limits[i];
+        if (i < limits.length)
+            pdFcjaCelu[i] = limits[i];
         console.log(
             `${i + 1}) ${aParams[i]}*y1 + ${bParams[i]}*y2 >= ${fcjaCelu[i]}`
         );
     }
     console.log(
+        `G(y1,y2) = ${limits[0]}*y1 + ${limits[1]}*y2 -> min
         `
-         G(y1,y2) = ${limits[0]}*y1 + ${limits[1]}*y2 -> min`
     );
 }
 
@@ -136,7 +137,7 @@ function findLinesIntersections() {
                 pdLinesCoords[j].endX,
                 pdLinesCoords[j].endY
             );
-            
+
             if (tmp.x !== null || tmp.y !== null) {
                 pdIntersectionPoints[counter] = tmp;
                 counter++;
@@ -144,18 +145,18 @@ function findLinesIntersections() {
         }
     }
 }
-function isOnLine(point,line){
+function isOnLine(point, line) {
     // pdParams;
-    return line.res === (point.x*line.y1 + point.y*line.y2);
+    return line.res === (point.x * line.y1 + point.y * line.y2);
 }
 
 function topPoint(point) {
     let baseDist = 0;
     let countDist = 0;
-    let midX,midY;    
+    let midX, midY;
     for (let i = 0; i < pdParams.length; i++) {
         // baseDist=getDistance()
-        if(!isOnLine(point,pdParams[i])){
+        if (!isOnLine(point, pdParams[i])) {
             // провіряємо чи її відстань до інших прямих 
             // в сторону нуля чи в сторону від нуля
             // якщо в сторону нуля то не беремо її
@@ -163,26 +164,22 @@ function topPoint(point) {
             // НА ДАНОМУ ЕТАПІ в нас є точка яку треба провірити
             // і пряма на якій вона не лежить
             // дивимось де вона відносно точки
-            
-            baseDist = getDistance(0,0,point.x,point.y);
+
+            baseDist = getDistance(0, 0, point.x, point.y);
             midX = (pdLinesCoords[i].startX + pdLinesCoords[i].endX) / 2;
             midY = (pdLinesCoords[i].startY + pdLinesCoords[i].endY) / 2;
-            countedDist = getDistance(0,0,midX,midY);
-            console.log('point,pdParams[i],i,countedDist,baseDist : ',point,pdParams[i],i,countedDist,baseDist);
+            countedDist = getDistance(0, 0, midX, midY);
             if (countedDist > baseDist) return false;
         }
     }
     return true;
 }
 
-function getDistance(startX,startY,endX,endY){
+function getDistance(startX, startY, endX, endY) {
     let dist = 0;
-    dist = Math.sqrt(Math.pow(endX-startX,2) + Math.pow(endY-startY,2));
+    dist = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
     return dist;
 }
-// console.log('distance', getDistance(0,0,1,1.5));
-
-
 
 function getPointsToCheck() {
     // pdIntersectionPoints[]
@@ -202,10 +199,9 @@ function getPointsToCheck() {
         x: 0,
         y: maxY,
     }
-// ////////////////////////////////////////////////////////////
     for (let j = 0; j < pdIntersectionPoints.length; j++) {
         if (pdIntersectionPoints[j].onLine1 === true && pdIntersectionPoints[j].onLine2 === true) {
-            if(topPoint(pdIntersectionPoints[j])){
+            if (topPoint(pdIntersectionPoints[j])) {
                 pointsToCheck[++counter] = {
                     x: pdIntersectionPoints[j].x,
                     y: pdIntersectionPoints[j].y,
@@ -213,12 +209,10 @@ function getPointsToCheck() {
             }
         }
     }
-// ////////////////////////////////////////////////////////////
-    
 
     let traceLen = traces.length;
     for (let k = 0; k < pointsToCheck.length; k++) {
-        traces[traceLen+k] = {
+        traces[traceLen + k] = {
             x: [pointsToCheck[k].x],
             y: [pointsToCheck[k].y],
             marker: {
@@ -227,28 +221,46 @@ function getPointsToCheck() {
             name: `(${pointsToCheck[k].x},${pointsToCheck[k].y})`,
             mode: 'markers'
         }
-        
     }
     Plotly.newPlot('myDiv', traces, layout);
 
     return pointsToCheck;
 }
 
+function findMinFunction(points) {
+    let min = 99999999999999999, tmp;
+    let result;
+    for (let i = 0; i < points.length; i++) {
+        tmp = pdFcjaCelu[0]*points[i].x + pdFcjaCelu[1]*points[i].y; 
+        if (min > tmp) {
+            min = tmp;
+            result = {
+                x: points[i].x,
+                y: points[i].y,
+                min: min,
+            }
+        }
+    }
+    return result;
+}
 console.log(`
- entered data:
+entered data:
  
  ${aParams[0]}*x1 + ${aParams[1]}*x2 + ${aParams[2]}*x3 + ${aParams[3]}*x4 <= ${limits[0]} 
  ${bParams[0]}*x1 + ${bParams[1]}*x2 + ${bParams[2]}*x3 + ${bParams[3]}*x4 <= ${limits[1]} 
- 
  F(x1,x2,..xn) = ${fcjaCelu[0]}*x1 + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  
  `)
-let l1 = findXnY(1, 2, 4);
 createPlot();
 findLinesIntersections();
-console.log('pdParams',pdParams);
-console.log('pdLinesCoords',pdLinesCoords);
-console.log('pdIntersectionPoints',pdIntersectionPoints);
-console.log('points to check: ',getPointsToCheck());
+console.log('pdParams', pdParams);
+console.log('pdLinesCoords', pdLinesCoords);
+console.log('pdIntersectionPoints', pdIntersectionPoints);
+// console.log('points to check: ', getPointsToCheck());
+console.log('PD pdFcjaCelu', pdFcjaCelu);
+let minimum = findMinFunction(getPointsToCheck());
+console.log('min is', minimum.x, minimum.y, minimum.min);
+
+// console.log('Math.min([1,2,3])',Math.min([1,2,3]));
 
 
 
