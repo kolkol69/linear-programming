@@ -136,6 +136,7 @@ function findLinesIntersections() {
                 pdLinesCoords[j].endX,
                 pdLinesCoords[j].endY
             );
+            
             if (tmp.x !== null || tmp.y !== null) {
                 pdIntersectionPoints[counter] = tmp;
                 counter++;
@@ -143,10 +144,45 @@ function findLinesIntersections() {
         }
     }
 }
-
-function topPoint() {
-
+function isOnLine(point,line){
+    // pdParams;
+    return line.res === (point.x*line.y1 + point.y*line.y2);
 }
+
+function topPoint(point) {
+    let baseDist = 0;
+    let countDist = 0;
+    let midX,midY;    
+    for (let i = 0; i < pdParams.length; i++) {
+        // baseDist=getDistance()
+        if(!isOnLine(point,pdParams[i])){
+            // провіряємо чи її відстань до інших прямих 
+            // в сторону нуля чи в сторону від нуля
+            // якщо в сторону нуля то не беремо її
+            // якщо знайшли ту шо треба то ретурн тру
+            // НА ДАНОМУ ЕТАПІ в нас є точка яку треба провірити
+            // і пряма на якій вона не лежить
+            // дивимось де вона відносно точки
+            
+            baseDist = getDistance(0,0,point.x,point.y);
+            midX = (pdLinesCoords[i].startX + pdLinesCoords[i].endX) / 2;
+            midY = (pdLinesCoords[i].startY + pdLinesCoords[i].endY) / 2;
+            countedDist = getDistance(0,0,midX,midY);
+            console.log('point,pdParams[i],i,countedDist,baseDist : ',point,pdParams[i],i,countedDist,baseDist);
+            if (countedDist > baseDist) return false;
+        }
+    }
+    return true;
+}
+
+function getDistance(startX,startY,endX,endY){
+    let dist = 0;
+    dist = Math.sqrt(Math.pow(endX-startX,2) + Math.pow(endY-startY,2));
+    return dist;
+}
+// console.log('distance', getDistance(0,0,1,1.5));
+
+
 
 function getPointsToCheck() {
     // pdIntersectionPoints[]
@@ -166,10 +202,10 @@ function getPointsToCheck() {
         x: 0,
         y: maxY,
     }
+// ////////////////////////////////////////////////////////////
     for (let j = 0; j < pdIntersectionPoints.length; j++) {
         if (pdIntersectionPoints[j].onLine1 === true && pdIntersectionPoints[j].onLine2 === true) {
-            //if(topPoint(pdIntersectionPoints[j])){
-            if (true) {
+            if(topPoint(pdIntersectionPoints[j])){
                 pointsToCheck[++counter] = {
                     x: pdIntersectionPoints[j].x,
                     y: pdIntersectionPoints[j].y,
@@ -177,6 +213,9 @@ function getPointsToCheck() {
             }
         }
     }
+// ////////////////////////////////////////////////////////////
+    
+
     let traceLen = traces.length;
     for (let k = 0; k < pointsToCheck.length; k++) {
         traces[traceLen+k] = {
@@ -206,10 +245,11 @@ console.log(`
 let l1 = findXnY(1, 2, 4);
 createPlot();
 findLinesIntersections();
-console.log(pdParams);
-console.log(pdLinesCoords);
-console.log(pdIntersectionPoints);
+console.log('pdParams',pdParams);
+console.log('pdLinesCoords',pdLinesCoords);
+console.log('pdIntersectionPoints',pdIntersectionPoints);
 console.log('points to check: ',getPointsToCheck());
+
 
 
 
