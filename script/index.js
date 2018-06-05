@@ -1,31 +1,45 @@
-// PD - program dualny
+let aParams;
+let bParams;
+let limits;
+let fcjaCelu;
+let pdParams = [];
+let pdFcjaCelu = [];
+let pdTraces = [];
+let traces = [];
+let pdLinesCoords = [];
+let pointsToCheck = [];
+let minimum;
+let pdIntersectionPoints = [];
+let finalResult = [];
+var layout = {
+    xaxis: {
+        range: [0, 5]
+    },
+    yaxis: {
+        range: [0, 4]
+    },
+    title: 'Rozwiazanie PD'
+};
 
+(function () {
 
+    $('#my-form').submit(function () {
+        // get all the inputs into an array.
+        var $inputs = $('#my-form :input');
 
-    let aParams = [1, 2, 1.5, 6];
-    let bParams = [2, 2, 1.5, 4];
-    let limits = [90000, 120000];
-    let fcjaCelu = [4, 6, 3, 12];
-    let pdParams = [];
-    let pdFcjaCelu = [];
-    let pdTraces = [];
-    let traces = [];
-    let pdLinesCoords = [];
-    let pointsToCheck = [];
-    let minimum;
-    let pdIntersectionPoints = [];
-    var layout = {
-        xaxis: {
-            range: [0, 5]
-        },
-        yaxis: {
-            range: [0, 4]
-        },
-        title: 'Rozwiazanie PD'
-    };
-    let finalResult = [];
-
-    start();
+        // not sure if you wanted this, but I thought I'd add it.
+        // get an associative array of just the values.
+        var values = {};
+        $inputs.each(function () {
+            values[this.name] = $(this).val();
+        });
+        aParams = $inputs[0].value.split(',');
+        bParams = $inputs[1].value.split(',');
+        fcjaCelu = $inputs[2].value.split(',');
+        limits = $inputs[3].value.split(',');
+        return false;
+    });
+})();
 
 function findXnY(a, b, y3) {
     let y1, y2;
@@ -44,7 +58,13 @@ function findXnY(a, b, y3) {
 
 function PPtoPD() {
     console.log("Problem Dualny")
-    for (let i = 0; i < aParams.length, i < bParams.length; i++) {
+    let paramLen = aParams.length > bParams.length ? aParams.length : bParams.length;
+    for (let i = 0; i < paramLen; i++) {
+        if (aParams[i] === undefined) {
+            aParams[i] = 0;
+        } if (bParams[i] === undefined) {
+            bParams[i] = 0;
+        }
         pdParams[i] = {
             y1: aParams[i],
             y2: bParams[i],
@@ -311,31 +331,7 @@ function gauss(passCond) {
     return x;
 }
 
-function finalCheck() {
-
-}
-function printToConsole() {
-    console.log(`========================================================================`);
-            console.log('Lista punktów ograniczających zbiór rozwiązań dopuszczalnych dla PD');
-            let iter = 0;
-            for (const iterator of pointsToCheck) {
-                console.log(`${++iter}) (${iterator.x},${iterator.y})`);
-            }
-            console.log(`========================================================================`);
-            console.log('Punkt V = (x1, x2, ... , xn) realizujący optimum PP');
-            for (const key in finalResult) {
-                const element = finalResult[key];
-                console.log(`${key} = ${element}`);
-            }
-            console.log(`========================================================================`);
-            console.log('Wartość maksymalną: F(V)');
-            console.log(`F(V) = ${minimum.min}`);
-            console.log(`========================================================================`);
-
-}
-function start() {
-    createPlot();
-    findLinesIntersections();
+function getfinalData() {
     minimum = findMinFunction(getPointsToCheck());
     let partRes = gauss(checkForConditions(minimum));
     let ctr = 0;
@@ -344,8 +340,52 @@ function start() {
             finalResult[`x${i + 1}`] = partRes[ctr++];
         }
     }
+}
+function strArrToInt(){
+    // aParams
+    // bParams
+    // limits
+    for (let i = 0; i < aParams.length; i++) {
+        aParams[i] = +aParams[i];        
+    }
+    for (let i = 0; i < bParams.length; i++) {
+        bParams[i] = +bParams[i];        
+    }
+    for (let i = 0; i < limits.length; i++) {
+        limits[i] = +limits[i];        
+    }
+    for (let i = 0; i < fcjaCelu.length; i++) {
+        fcjaCelu[i] = +fcjaCelu[i];        
+    }
+}
+function printToConsole() {
+    console.log(`========================================================================`);
+    console.log('Lista punktów ograniczających zbiór rozwiązań dopuszczalnych dla PD');
+    let iter = 0;
+    for (const iterator of pointsToCheck) {
+        console.log(`${++iter}) (${iterator.x},${iterator.y})`);
+    }
+    console.log(`========================================================================`);
+    console.log('Punkt V = (x1, x2, ... , xn) realizujący optimum PP');
+    for (const key in finalResult) {
+        const element = finalResult[key];
+        console.log(`${key} = ${element}`);
+    }
+    console.log(`========================================================================`);
+    console.log('Wartość maksymalną: F(V)');
+    console.log(`F(V) = ${minimum.min}`);
+    console.log(`========================================================================`);
 
-    printToConsole()
+}
+function start() {
+    setTimeout(`
+    strArrToInt(),
+    createPlot();
+    findLinesIntersections();
+    getfinalData();
+    printToConsole();`, 
+    1000);
+    
 }
 
 
