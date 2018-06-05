@@ -1,32 +1,31 @@
+
+
 // PD - program dualny
+let aParams = [1, 2, 1.5, 6];
+let bParams = [2, 2, 1.5, 4];
+let limits = [90000, 120000];
+let fcjaCelu = [4, 6, 3, 12];
+let pdParams = [];
+let pdFcjaCelu = [];
+let pdTraces = [];
+let traces = [];
+let pdLinesCoords = [];
+let pointsToCheck = [];
 
+let pdIntersectionPoints = [];
+var layout = {
+    xaxis: {
+        range: [0, 5]
+    },
+    yaxis: {
+        range: [0, 4]
+    },
+    title: 'Rozwiazanie PD'
+};
 
+let finalResult = [];
 
-    let aParams = [1, 2, 1.5, 6];
-    let bParams = [2, 2, 1.5, 4];
-    let limits = [90000, 120000];
-    let fcjaCelu = [4, 6, 3, 12];
-    let pdParams = [];
-    let pdFcjaCelu = [];
-    let pdTraces = [];
-    let traces = [];
-    let pdLinesCoords = [];
-    let pointsToCheck = [];
-    let minimum;
-    let pdIntersectionPoints = [];
-    var layout = {
-        xaxis: {
-            range: [0, 5]
-        },
-        yaxis: {
-            range: [0, 4]
-        },
-        title: 'Rozwiazanie PD'
-    };
-    let finalResult = [];
-
-    start();
-
+// PL - program liniowy 
 function findXnY(a, b, y3) {
     let y1, y2;
     if (a !== 0) {
@@ -175,7 +174,7 @@ function getDistance(startX, startY, endX, endY) {
 }
 
 function getPointsToCheck() {
-
+    
     let counter = 0;
     let maxY = 0, maxX = 0;
 
@@ -249,8 +248,9 @@ function checkForConditions(minPoint) {
                 y3: pdFcjaCelu[counter++]
             });
         }
-        else
+        else {
             finalResult[`x${i + 1}`] = 0;
+        }
     }
     return passCondition;
 }
@@ -268,6 +268,8 @@ function gauss(passCond) {
             }
         }
     }
+
+
     var n = A.length;
 
     for (var i = 0; i < n; i++) {
@@ -280,6 +282,7 @@ function gauss(passCond) {
                 maxRow = k;
             }
         }
+
 
         // Swap maximum row with current row (column by column)
         for (var k = i; k < n + 1; k++) {
@@ -312,46 +315,42 @@ function gauss(passCond) {
 }
 
 function finalCheck() {
-
+    console.log(`
+F(x1,x2,..xn) = ${fcjaCelu[0]}*${finalResult.x1} + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  
+`)
 }
-function printToConsole() {
-    console.log(`========================================================================`);
-            console.log('Lista punktów ograniczających zbiór rozwiązań dopuszczalnych dla PD');
-            let iter = 0;
-            for (const iterator of pointsToCheck) {
-                console.log(`${++iter}) (${iterator.x},${iterator.y})`);
-            }
-            console.log(`========================================================================`);
-            console.log('Punkt V = (x1, x2, ... , xn) realizujący optimum PP');
-            for (const key in finalResult) {
-                const element = finalResult[key];
-                console.log(`${key} = ${element}`);
-            }
-            console.log(`========================================================================`);
-            console.log('Wartość maksymalną: F(V)');
-            console.log(`F(V) = ${minimum.min}`);
-            console.log(`========================================================================`);
-
-}
-function start() {
-    createPlot();
-    findLinesIntersections();
-    minimum = findMinFunction(getPointsToCheck());
-    let partRes = gauss(checkForConditions(minimum));
-    let ctr = 0;
-    for (let i = 0; i < pdParams.length; i++) {
-        if (finalResult[`x${i + 1}`] !== 0) {
-            finalResult[`x${i + 1}`] = partRes[ctr++];
-        }
+// console.log()
+createPlot();
+findLinesIntersections();
+console.log('pdParams', pdParams);
+console.log('pdLinesCoords', pdLinesCoords);
+console.log('pdIntersectionPoints', pdIntersectionPoints);
+console.log('PD pdFcjaCelu', pdFcjaCelu);
+let minimum = findMinFunction(getPointsToCheck());
+console.log('min is', minimum.x, minimum.y, minimum.min);
+let partRes = gauss(checkForConditions(minimum));
+let ctr = 0;
+for (let i = 0; i < pdParams.length; i++) {
+    if (finalResult[`x${i + 1}`] !== 0) {
+        finalResult[`x${i + 1}`] = partRes[ctr++];
     }
-
-    printToConsole()
 }
+console.log(finalResult);
+console.log(pointsToCheck);
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+console.log('Lista punktów ograniczających zbiór rozwiązań dopuszczalnych dla PD');
+let iter = 0;
+for (const iterator of pointsToCheck) {
+    console.log(`${++iter}) (${iterator.x},${iterator.y})`);
+}
+console.log('Punkt V = (x1, x2, ... , xn) realizujący optimum PP');
+finalResult.forEach    
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 // let inData = `
 // <h3>Input:</h3><br>
-
+ 
 //  ${aParams[0]}*x1 + ${aParams[1]}*x2 + ${aParams[2]}*x3 + ${aParams[3]}*x4 <= ${limits[0]} <br>
 //  ${bParams[0]}*x1 + ${bParams[1]}*x2 + ${bParams[2]}*x3 + ${bParams[3]}*x4 <= ${limits[1]} <br>
 //  F(x1,x2,..xn) = ${fcjaCelu[0]}*x1 + ${fcjaCelu[1]}*x1 + ${fcjaCelu[2]}*x1 + ${fcjaCelu[3]}*x4 -> max  <br>
