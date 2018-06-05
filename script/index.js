@@ -13,10 +13,10 @@ let pdIntersectionPoints = [];
 let finalResult = [];
 var layout = {
     xaxis: {
-        range: [0, 5]
+        range: [0, 8]
     },
     yaxis: {
-        range: [0, 4]
+        range: [0, 6]
     },
     title: 'Rozwiazanie PD'
 };

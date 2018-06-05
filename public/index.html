@@ -9,10 +9,20 @@
     <!-- Plotly chart will be drawn inside this DIV -->
   </div>
   <form id="my-form" onsubmit="start()">
-    <input id="aParams" type="text" value="1,2,1.5,6">
+    
+    <!-- <input id="aParams" type="text" value="1,2,1.5,6">
     <input id="bParams" type="text" value="2,2,1.5,4">
     <input id="fcjaCelu" type="text" value="4,6,3,12">
-    <input id="limits" type="text" value="90000, 120000">
+    <input id="limits" type="text" value="90000, 120000"> -->
+    Parametry I rownania<br>
+    <input style="margin-bottom:10px;" id="aParams" type="text" value="0.5,0.4,0.4,0.2">
+    <br>Parametry II rownania<br>
+    <input style="margin-bottom:10px;" id="bParams" type="text" value="0.4,0.2,0,0.5">
+    <br>Parametry funckji celu<br>
+    <input style="margin-bottom:10px;" id="fcjaCelu" type="text" value="10,14,8,11">
+    <br>Ograniczenia I i II rownania<br>
+    <input style="margin-bottom:10px;" id="limits" type="text" value="2000,2800">
+    <br>
     <input type="submit" value="Submit">
   </form>
   
